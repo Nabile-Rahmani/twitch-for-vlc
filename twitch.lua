@@ -32,12 +32,12 @@ function parse()
         local broadcastType = string.match(vlc.path, "[%w+.]?twitch.tv/[a-z0-9_]+/(.)")
 
         if broadcastType == "v" then
-            local url = "https://api.twitch.tv/api/vods/" .. videoID .. "/access_token"
+            local url = vlc.access .. "://api.twitch.tv/api/vods/" .. videoID .. "/access_token"
             local data = json.decode(vlc.stream(url):readline(), 1, nil)
 
-            return { { path = "http://usher.twitch.tv/vod/" .. videoID .. ".m3u8?nauth=" .. data.token .. "&nauthsig=" .. data.sig, title = channel .. "'s past broadcast" } }
+            return { { path = "http://usher.twitch.tv/vod/" .. videoID .. ".m3u8?nauth=" .. data.token .. "&nauthsig=" .. data.sig .. "&allow_audio_only=true&allow_source=true&type=any", title = channel .. "'s past broadcast" } }
         else
-            local url = "https://api.twitch.tv/api/videos/a" .. videoID
+            local url = vlc.access .. "://api.twitch.tv/api/videos/a" .. videoID
             local data = json.decode(vlc.stream(url):readline(), 1, nil)
             local playlist = { }
 
@@ -48,9 +48,9 @@ function parse()
             return playlist
         end
     elseif string.match(vlc.path, "[%w+.]?twitch.tv/[a-z0-9_]+") then
-        local url = "http://api.twitch.tv/api/channels/" .. channel .. "/access_token"
+        local url = vlc.access .. "://api.twitch.tv/api/channels/" .. channel .. "/access_token"
         local data = json.decode(vlc.stream(url):readline(), 1, nil)
 
-        return { { path = "http://usher.twitch.tv/api/channel/hls/" .. channel .. ".m3u8?token=" .. data.token .. "&sig=" .. data.sig, title = channel .. "'s stream" } }
+        return { { path = "http://usher.twitch.tv/api/channel/hls/" .. channel .. ".m3u8?token=" .. data.token .. "&sig=" .. data.sig .. "&allow_audio_only=true&allow_source=true&type=any", title = channel .. "'s stream" } }
     end
 end
