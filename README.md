@@ -17,3 +17,5 @@ To install the plugin, [download twitch.lua](https://bitbucket.org/Nabile/twitch
 ## Credits ##
 
 Thanks to Johannes Bader for providing a quick explanation on how to get Twitch video URLs (http://www.johannesbader.ch/2014/01/find-video-url-of-twitch-tv-live-streams-or-past-broadcasts/).
+
+Thanks to Fons Leenaars for documenting the new HLS format used by past broadcasts (https://github.com/fonsleenaars/twitch-hls-vods).
