@@ -25,27 +25,32 @@ function probe()
 end
 
 function parse()
-    local channel = vlc.path:match("%w+.twitch.tv/([a-z0-9]+)")
+    local channel = vlc.path:match("[%w+.]?twitch.tv/([a-z0-9_]+)")
 
-    if not string.match(vlc.path, "%w+.twitch.tv/[a-z0-9]+/./[0-9]+") then
-        vlc.msg.info("Loading " .. channel .. "'s Twitch stream.")
+    if string.match(vlc.path, "[%w+.]?twitch.tv/[a-z0-9_]+/./[0-9]+") then
+        local videoID = vlc.path:match("[%w+.]?twitch.tv/[a-z0-9_]+/./([0-9]+)")
+        local broadcastType = string.match(vlc.path, "[%w+.]?twitch.tv/[a-z0-9_]+/(.)")
 
+        if broadcastType == "v" then
+            local url = "https://api.twitch.tv/api/vods/" .. videoID .. "/access_token"
+            local data = json.decode(vlc.stream(url):readline(), 1, nil)
+
+            return { { path = "http://usher.twitch.tv/vod/" .. videoID .. ".m3u8?nauth=" .. data.token .. "&nauthsig=" .. data.sig, title = channel .. "'s past broadcast" } }
+        else
+            local url = "https://api.twitch.tv/api/videos/a" .. videoID
+            local data = json.decode(vlc.stream(url):readline(), 1, nil)
+            local playlist = { }
+
+            for key, value in pairs(data.chunks.live) do
+                table.insert(playlist, { path = value.url, title = channel .. "'s past broadcast (part " .. key .. ")", arturl = data.preview })
+            end
+
+            return playlist
+        end
+    elseif string.match(vlc.path, "[%w+.]?twitch.tv/[a-z0-9_]+") then
         local url = "http://api.twitch.tv/api/channels/" .. channel .. "/access_token"
         local data = json.decode(vlc.stream(url):readline(), 1, nil)
 
-        return { { path = "http://usher.twitch.tv/api/channel/hls/" .. channel .. ".m3u8?player=twitchweb&token=" .. data.token .. "&sig=" .. data.sig .. "&allow_audio_only=true&allow_source=true&type=any", title = channel .. "'s stream" } }
-    else
-        vlc.msg.info("Loading " .. channel .. "'s Twitch past broadcast.")
-
-        local videoID = vlc.path:match("%w+.twitch.tv/[a-z0-9]+/./([0-9]+)")
-        local url = "https://api.twitch.tv/api/videos/a" .. videoID
-        local data = json.decode(vlc.stream(url):readline(), 1, nil)
-        local playlist = { }
-
-        for key, value in pairs(data.chunks.live) do
-            table.insert(playlist, { path = value.url, title = channel .. "'s past broadcast (part " .. key .. ")", arturl = data.preview })
-        end
-
-        return playlist
+        return { { path = "http://usher.twitch.tv/api/channel/hls/" .. channel .. ".m3u8?token=" .. data.token .. "&sig=" .. data.sig, title = channel .. "'s stream" } }
     end
 end
