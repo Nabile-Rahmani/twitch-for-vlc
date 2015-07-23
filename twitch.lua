@@ -28,8 +28,7 @@ function parse()
     local channel = vlc.path:match("[%w+.]?twitch.tv/([a-z0-9_]+)")
 
     if string.match(vlc.path, "[%w+.]?twitch.tv/[a-z0-9_]+/./[0-9]+") then
-        local videoID = vlc.path:match("[%w+.]?twitch.tv/[a-z0-9_]+/./([0-9]+)")
-        local broadcastType = string.match(vlc.path, "[%w+.]?twitch.tv/[a-z0-9_]+/(.)")
+        local broadcastType, videoID = vlc.path:match("[%w+.]?twitch.tv/[a-z0-9_]+/(.)/([0-9]+)")
 
         if broadcastType == "v" then
             local url = vlc.access .. "://api.twitch.tv/api/vods/" .. videoID .. "/access_token"
@@ -37,7 +36,8 @@ function parse()
 
             return { { path = "http://usher.twitch.tv/vod/" .. videoID .. ".m3u8?nauth=" .. data.token .. "&nauthsig=" .. data.sig .. "&allow_audio_only=true&allow_source=true&type=any", title = channel .. "'s past broadcast" } }
         else
-            local url = vlc.access .. "://api.twitch.tv/api/videos/a" .. videoID
+            local prefix = broadcastType == "b" and "a" or broadcastType == "c" and "c" or ""
+            local url = vlc.access .. "://api.twitch.tv/api/videos/" .. prefix .. videoID
             local data = json.decode(vlc.stream(url):readline(), 1, nil)
             local playlist = { }
 
