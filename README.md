@@ -1,7 +1,7 @@
 # Twitch for VLC #
 * * *
 
-Twitch for VLC is a playlist plugin for VLC that parses Twitch streams and past broadcast URLs.
+Twitch for VLC is a playlist plugin for VLC that parses Twitch streams' and past broadcasts' URLs.
 
 Someone just had to do it.
 

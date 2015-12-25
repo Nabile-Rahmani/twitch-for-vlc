@@ -1,4 +1,5 @@
 -- Twitch for VLC.
+-- Visit https://bitbucket.org/Nabile/twitch-for-vlc for updates.
 
 --[[
 
@@ -17,11 +18,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 local json = require("dkjson")
 
 function probe()
-    if not vlc.access:match("http") then
-        return false
-    end
-
-    return string.match(vlc.path:match("([^/]+)"), "[%w+.]?twitch.tv")
+    return vlc.access:match("http[s]?") and string.match(vlc.path:match("([^/]+)"), "[%w+.]?twitch.tv")
 end
 
 function parse()
@@ -32,13 +29,13 @@ function parse()
 
         if broadcastType == "v" then
             local url = vlc.access .. "://api.twitch.tv/api/vods/" .. videoID .. "/access_token"
-            local data = json.decode(vlc.stream(url):readline(), 1, nil)
+            local data = json.decode(vlc.stream(url):readline())
 
             return { { path = "http://usher.twitch.tv/vod/" .. videoID .. ".m3u8?nauth=" .. data.token .. "&nauthsig=" .. data.sig .. "&allow_audio_only=true&allow_source=true&type=any", title = channel .. "'s past broadcast" } }
         else
             local prefix = broadcastType == "b" and "a" or broadcastType == "c" and "c" or ""
             local url = vlc.access .. "://api.twitch.tv/api/videos/" .. prefix .. videoID
-            local data = json.decode(vlc.stream(url):readline(), 1, nil)
+            local data = json.decode(vlc.stream(url):readline())
             local playlist = { }
 
             for key, value in pairs(data.chunks.live) do
@@ -49,7 +46,7 @@ function parse()
         end
     elseif string.match(vlc.path, "[%w+.]?twitch.tv/[a-z0-9_]+") then
         local url = vlc.access .. "://api.twitch.tv/api/channels/" .. channel .. "/access_token"
-        local data = json.decode(vlc.stream(url):readline(), 1, nil)
+        local data = json.decode(vlc.stream(url):readline())
 
         return { { path = "http://usher.twitch.tv/api/channel/hls/" .. channel .. ".m3u8?token=" .. data.token .. "&sig=" .. data.sig .. "&allow_audio_only=true&allow_source=true&type=any", title = channel .. "'s stream" } }
     end
